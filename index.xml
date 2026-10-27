@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<index version="1" name="Mannix Squared JSFX" commit="b986f2dbc6caf3aa1c09c85ae61c3e3f4e15638a">
+  <category name="Effects">
+    <reapack name="ReaCrusher.jsfx" type="effect" desc="ReaCrusher (JSFX)">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 \fmodern Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Stereo distortion, resonant filtering and compression with an original drawn UI. Includes 20 factory presets plus Clear in REAPER's native preset menu. GPL-3.0-or-later.\par}
+}
+]]></description>
+        <link rel="website">https://github.com/mannixsquared/JSFX</link>
+      </metadata>
+      <version name="0.1.0" author="Mannix Squared" time="2026-10-27T11:46:51Z">
+        <changelog><![CDATA[Initial release with native presets and a scalable procedural interface.]]></changelog>
+        <source>https://github.com/mannixsquared/JSFX/raw/b986f2dbc6caf3aa1c09c85ae61c3e3f4e15638a/Effects/ReaCrusher.jsfx</source>
+        <source file="ReaCrusher.jsfx.rpl">https://github.com/mannixsquared/JSFX/raw/b986f2dbc6caf3aa1c09c85ae61c3e3f4e15638a/Effects/ReaCrusher.jsfx.rpl</source>
+        <source file="ReaCrusher-LICENSE.txt">https://github.com/mannixsquared/JSFX/raw/b986f2dbc6caf3aa1c09c85ae61c3e3f4e15638a/LICENSE</source>
+        <source file="ReaCrusher-Guide.md">https://github.com/mannixsquared/JSFX/raw/b986f2dbc6caf3aa1c09c85ae61c3e3f4e15638a/USER_GUIDE.md</source>
+      </version>
+    </reapack>
+  </category>
+  <metadata>
+    <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 \fmodern Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 \outlinelevel0 \b \fs36 Mannix Squared JSFX\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 A collection of JSFX effects for REAPER, distributed through ReaPack.\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 \outlinelevel1 \b \fs32 ReaCrusher\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 Stereo distortion, resonant low-pass filtering and compression for REAPER. An original scalable interface, seven knobs, linked stereo processing, and 20 factory presets plus Clear using REAPER's native preset menu.\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 The interface uses procedural drawing and requires no image assets or external plugin installation.\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 \outlinelevel1 \b \fs32 Install with ReaPack\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 Import this repository URL in {\b Extensions \u8594 ? ReaPack \u8594 ? Import repositories}:\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 \f1 https://raw.githubusercontent.com/mannixsquared/JSFX/main/index.xml\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 Browse packages, install ReaCrusher, then refresh REAPER's FX browser. The adjacent {\f1 .rpl} bank is imported on first use. If the effect was previously installed, use {\b + \u8594 ? Import preset library (.rpl)} in its native preset toolbar.\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 \outlinelevel1 \b \fs32 Manual installation\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 Copy both files from {\f1 Effects/} to the same directory beneath your REAPER resource folder's {\f1 Effects} directory. Open the FX browser and search for ReaCrusher.\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 Drag vertically to adjust; Shift-drag for fine changes, scroll to adjust, and double-click to reset a knob. See {\field{\*\fldinst{HYPERLINK "USER_GUIDE.md"}}{\fldrslt{\ul
+USER_GUIDE.md
+}}}
+ for DSP details.\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 \outlinelevel1 \b \fs32 License\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 Copyright (C) 2026 Mannix Squared. Licensed under GNU GPL version 3 or later; see {\field{\*\fldinst{HYPERLINK "LICENSE"}}{\fldrslt{\ul
+LICENSE
+}}}
+.\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 \outlinelevel1 \b \fs32 Development and updates\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 The {\f1 main} branch is indexed by GitHub Actions. Increase {\f1 @version} in {\f1 Effects/ReaCrusher.jsfx}, update {\f1 @changelog}, then push to publish an update. Keep the effect's filename and category path stable to preserve project references. The generated {\f1 index.xml} points to committed file versions.\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 \outlinelevel1 \b \fs32 Adding effects\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 Add each effect as a separate {\f1 .jsfx} package under a category directory such as {\f1 Effects/}. Give each package its own version and metadata header, and list any companion files with {\f1 @provides}. Mark shared scripts and development helpers {\f1 @noindex}. All packages share this repository\u8217's ReaPack index.\par}
+}
+]]></description>
+  </metadata>
+</index>

@@ -1,0 +1,245 @@
+// @description ReaCrusher
+// @version 0.1.0
+// @author Mannix Squared
+// @provides
+//   ReaCrusher.jsfx.rpl
+//   ../LICENSE > ReaCrusher-LICENSE.txt
+//   ../USER_GUIDE.md > ReaCrusher-Guide.md
+// @link https://github.com/mannixsquared/JSFX
+// @about
+//   Stereo distortion, resonant filtering and compression with an original drawn UI.
+//   Includes 20 factory presets plus Clear in REAPER's native preset menu.
+//   GPL-3.0-or-later.
+// @changelog
+//   Initial release with native presets and a scalable procedural interface.
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Mannix Squared
+// This program is free software: you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later version.
+// Distributed without any warranty. See ReaCrusher-LICENSE.txt for details.
+desc:ReaCrusher (JSFX)
+// Stereo distortion, low-pass filtering and linked compression.
+// Signal path: mechanical > LP + limiter > tube > compressor > mix > gain > clip.
+tags: distortion compressor filter
+in_pin:Left
+in_pin:Right
+out_pin:Left
+out_pin:Right
+slider1:0<0,1,1{Off,On}>-Distortion
+slider2:0<0,1,0.001>-Mechanical
+slider3:0<0,1,0.001>-Tube
+slider4:0<0,1,1{Off,On}>-Filter
+slider5:0.5<0,1,0.001>-Cutoff
+slider6:0<0,1,0.001>-Resonance
+slider7:0<0,1,1{Off,On}>-Compressor
+slider8:0<0,1,0.001>-Compression amount
+slider9:0<0,1,1{Normal,Phat}>-Compressor mode
+slider10:1<0,1,1{Bypass,On}>-Master
+slider11:1<0,1,0.001>-Wet mix
+slider12:1<0,1,0.001>-Master volume
+
+@init
+ext_tail_size = -1;
+gfx_ext_retina = 1;
+meter_decay=exp(-1/(0.25*srate));
+comp_gain = limit_gain = 1;
+comp_release = limit_release = 0;
+comp_env = limit_env = 0;
+smooth = 1-exp(-1/(0.01*srate));
+mech = slider2; tube = slider3; cut = slider5; res = slider6;
+amount = slider8*0.99; wet = slider11; volume = slider12;
+coeff_count = 0;
+
+function mechanical(x, a) local(d, k) (
+  d=1+10*a; k=0.25/(d-0.75); x*=d;
+  x>0.75 ? 0.75+(x-0.75)*k :
+  x< -0.75 ? -0.75-(-0.75-x)*k : x;
+);
+function tube_shape(x, a) local(d, v, sign) (
+  d=1+4*a; x*=d;
+  abs(x)>0.6000000238418579 ? (
+    sign=x<0 ? -1 : 1;
+    v=(1-(abs(x)-0.6000000238418579)/(d-0.6000000238418579))*0.7071070075035095;
+    sign*(0.6000000238418579+(0.5-v*v)*0.7999999523162842);
+  ) : x;
+);
+function follower(x, attack, release) instance(env) local(decayed, delta) (
+  decayed=env-1/(release*srate);
+  delta=max(0,abs(x)-decayed);
+  env=max(0,decayed+min(1/(attack*srate),delta));
+);
+function lowpass(x) instance(x1,x2,y1,y2) local(y) (
+  y=b0*x+b1*x1+b0*x2-a1*y1-a2*y2;
+  x2=x1; x1=x; y2=y1; y1=y;
+  abs(y1)<0.000000000000000000000001 ? (y1=0; y2=0;);
+  y;
+);
+
+@sample
+// Smooth continuous controls over roughly 10 ms. Switches remain discrete.
+mech+=(slider2-mech)*smooth; tube+=(slider3-tube)*smooth;
+cut+=(slider5-cut)*smooth; res+=(slider6-res)*smooth;
+amount+=(slider8*0.99-amount)*smooth;
+wet+=(slider11-wet)*smooth; volume+=(slider12-volume)*smooth;
+dry_l=spl0; dry_r=spl1;
+slider10 >= 0.5 ? (
+  l=dry_l; r=dry_r;
+  slider1 >= 0.5 && mech>0 ? (l=mechanical(l,mech); r=mechanical(r,mech););
+  slider4 >= 0.5 ? (
+    coeff_count<=0 ? (
+      // Recovered nonlinear cutoff taper, 80 Hz to 16 kHz; Q = 1 + 6R.
+      hz=cut>=1 ? 16000 : cut<=0 ? 80 : min(16000,80-3980*log(1-cut)/log(10));
+      hz=min(hz,srate*0.5*exp(-0.01*log(2)/12));
+      omega=2*$pi*hz/srate; c=cos(omega); alpha=sin(omega)/(2*(1+6*res));
+      b0=(1-c)*0.5/(1+alpha); b1=2*b0;
+      a1=-2*c/(1+alpha); a2=(1-alpha)/(1+alpha);
+      coeff_count=16;
+    );
+    coeff_count-=1;
+    l=fl.lowpass(l); r=fr.lowpass(r);
+    env=lim.follower(max(abs(l),abs(r)),0.0075,0.05);
+    env>1 ? (
+      candidate=1/env;
+      limit_gain>candidate ? (limit_gain=candidate; limit_release=(1-candidate)/(7.5*srate););
+    );
+    limit_gain<1 ? (l*=limit_gain; r*=limit_gain; limit_gain+=limit_release;);
+  ) : (coeff_count=0;);
+  slider1 >= 0.5 && tube>0 ? (l=tube_shape(l,tube); r=tube_shape(r,tube););
+  slider7 >= 0.5 ? (
+    multiplier=1/(1-min(0.99,amount));
+    peak=max(abs(l),abs(r));
+    env=slider9<0.5 ? comp.follower(peak,0.03,0.08) : peak;
+    driven=env*multiplier;
+    l*=multiplier; r*=multiplier;
+    driven>0.3100000023841858 ? (
+      v=(1-(driven-0.3100000023841858)/(multiplier-0.3100000023841858))*0.7071070075035095;
+      candidate=(0.3100000023841858+(0.5-v*v)*1.3799999952316284)/driven;
+      comp_gain>candidate ? (comp_gain=candidate; comp_release=(1-candidate)/(0.00025*srate););
+    );
+    comp_gain<1 ? (l*=comp_gain; r*=comp_gain; comp_gain+=comp_release;);
+  );
+  gain=pow(max(0,volume),2.736999988555908);
+  spl0=max(-0.9999,min(0.9999,(wet*l+(1-wet)*dry_l)*gain));
+  spl1=max(-0.9999,min(0.9999,(wet*r+(1-wet)*dry_r)*gain));
+);
+
+// Decaying peak meters; read-only display state for @gfx.
+meter_in=max(max(abs(dry_l),abs(dry_r)),meter_in*meter_decay);
+meter_out=max(max(abs(spl0),abs(spl1)),meter_out*meter_decay);
+
+@gfx 760 480
+// Original procedural artwork. No bitmap assets or original skin resources.
+function ink(r,g,b) (gfx_set(r,g,b,1););
+function text(x,y,size,str) (
+  gfx_setfont(1,"Arial",max(8,size*ui_scale));
+  gfx_x=ox+x*ui_scale; gfx_y=oy+y*ui_scale; gfx_drawstr(str);
+);
+function line(x,y,x2,y2) (
+  gfx_line(ox+x*ui_scale,oy+y*ui_scale,ox+x2*ui_scale,oy+y2*ui_scale,1);
+);
+function box(x,y,w,h) (
+  gfx_rect(ox+x*ui_scale,oy+y*ui_scale,w*ui_scale,h*ui_scale);
+);
+function circle(x,y,r,fill) (
+  gfx_circle(ox+x*ui_scale,oy+y*ui_scale,r*ui_scale,fill,1);
+);
+function update_control(id,value) (
+  slider(id)=max(0,min(1,value));
+  sliderchange(2^(id-1)); slider_automate(2^(id-1));
+  changed_mask |= 2^(id-1);
+);
+function toggle(id,x,y,label) local(hover,on) (
+  hover=mx>=x && mx<x+132 && my>=y && my<y+28;
+  hover && pressed ? (update_control(id,slider(id)<0.5););
+  on=slider(id)>=0.5;
+  ink(0.14,0.15,0.16); box(x,y,132,28);
+  on ? ink(0.96,0.66,0.30) : ink(0.40,0.42,0.43);
+  circle(x+12,y+14,3,1);
+  hover ? ink(1,0.88,0.68) : ink(0.78,0.79,0.78);
+  // Align text using its measured font height, on the indicator's centerline.
+  gfx_setfont(1,"Arial",max(8,12*ui_scale));
+  gfx_measurestr(label,toggle_text_w,toggle_text_h);
+  gfx_x=ox+(x+24)*ui_scale;
+  gfx_y=oy+(y+14)*ui_scale-toggle_text_h*0.5;
+  gfx_drawstr(label);
+);
+function knob(id,x,y,label,reset) local(hover,value,angle,i,a,radius) (
+  hover=(mx-x)^2+(my-y)^2<43^2;
+  hover && pressed ? (
+    time_precise()-last_click<0.3 && last_id==id ? (
+      active=0; update_control(id,reset);
+    ) : (active=id;);
+    last_click=time_precise(); last_id=id;
+  );
+  active==id && down && !pressed ? (
+    update_control(id,slider(id)+(prev_my-my)*((mouse_cap&8) ? 0.0005 : 0.005));
+  );
+  hover && mouse_wheel!=0 ? (
+    update_control(id,slider(id)+mouse_wheel/120*((mouse_cap&8) ? 0.001 : 0.01));
+    slider_automate(2^(id-1),1); sliderchange(-1);
+  );
+  value=slider(id); angle=(0.75+value*1.5)*$pi;
+  // Sweep ticks are deliberately drawn instead of using platform arc conventions.
+  i=0;
+  loop(31,
+    a=(0.75+i/30*1.5)*$pi;
+    i/30<=value ? ink(0.96,0.66,0.30) : ink(0.26,0.28,0.29);
+    line(x+cos(a)*34,y+sin(a)*34,x+cos(a)*38,y+sin(a)*38);
+    i+=1;
+  );
+  ink(0.065,0.073,0.08); circle(x,y+2,29,1);
+  hover || active==id ? ink(0.28,0.30,0.31) : ink(0.20,0.22,0.23);
+  circle(x,y,28,1);
+  ink(0.12,0.14,0.15); circle(x,y,23,0);
+  ink(1,0.79,0.48);
+  line(x+cos(angle)*13,y+sin(angle)*13,x+cos(angle)*24,y+sin(angle)*24);
+  ink(0.88,0.88,0.85); text(x-49,y+47,13,label);
+  ink(0.60,0.63,0.63);
+  id==5 ? (
+    value>=1 ? f=16000 : value<=0 ? f=80 : f=min(16000,80-3980*log(1-value)/log(10));
+    f>=1000 ? sprintf(#readout,"%.2f kHz",f/1000) : sprintf(#readout,"%.0f Hz",f);
+  ) : id==12 ? (
+    value>0 ? sprintf(#readout,"%.1f dB",20*2.736999988555908*log(value)/log(10)) : strcpy(#readout,"-inf dB");
+  ) : sprintf(#readout,"%.1f %%",value*100);
+  text(x-49,y+65,12,#readout);
+);
+function meter(x,y,label,value) local(db,fill) (
+  ink(0.52,0.55,0.55); text(x,y,10,label);
+  ink(0.20,0.22,0.23); box(x+30,y+3,260,4);
+  db=20*log(max(0.000001,value))/log(10);
+  fill=max(0,min(1,(db+60)/60));
+  ink(0.96,0.66,0.30); box(x+30,y+3,260*fill,4);
+);
+
+ui_scale=min(gfx_w/760,gfx_h/480);
+ox=(gfx_w-760*ui_scale)/2; oy=(gfx_h-480*ui_scale)/2;
+mx=(mouse_x-ox)/ui_scale; my=(mouse_y-oy)/ui_scale;
+gfx_getchar();
+down=mouse_cap&1; pressed=down && !was_down;
+!down && was_down ? (
+  active>0 ? slider_automate(2^(active-1),1);
+  changed_mask ? sliderchange(-1);
+  active=0; changed_mask=0;
+);
+gfx_clear=0;
+ink(0.095,0.11,0.12); box(0,0,760,480);
+ink(0.96,0.66,0.30); box(26,25,4,31);
+ink(0.94,0.93,0.88); text(42,21,27,"ReaCrusher");
+ink(0.55,0.59,0.59); text(43,54,11,"STEREO PROCESSOR");
+toggle(10,602,29,"MASTER");
+ink(0.25,0.28,0.29); line(26,87,734,87);
+ink(0.94,0.93,0.88);
+text(26,106,15,"01  DISTORTION"); text(208,106,15,"02  FILTER");
+text(390,106,15,"03  COMPRESS"); text(572,106,15,"04  OUTPUT");
+ink(0.21,0.24,0.25); line(189,106,189,430); line(371,106,371,430); line(553,106,553,430);
+toggle(1,26,136,"DISTORTION"); toggle(4,208,136,"LOW-PASS");
+toggle(7,390,136,"COMPRESSOR"); toggle(9,390,350,"PHAT MODE");
+knob(2,100,212,"Mechanical",0); knob(3,100,340,"Tube",0);
+knob(5,282,212,"Cutoff",0.5); knob(6,282,340,"Resonance",0);
+knob(8,464,235,"Amount",0);
+knob(11,646,212,"Wet mix",1); knob(12,646,340,"Volume",1);
+ink(0.52,0.56,0.56); text(398,400,11,"STEREO LINKED");
+ink(0.25,0.28,0.29); line(26,449,734,449);
+meter(26,460,"IN",meter_in); meter(416,460,"OUT",meter_out);
+prev_my=my; was_down=down; mouse_wheel=0;

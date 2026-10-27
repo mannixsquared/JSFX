@@ -1,6 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="Mannix Squared JSFX" commit="1dba17103b0ff9cffff4ee6af12407f67b0db7f8">
+<index version="1" name="Mannix Squared JSFX" commit="ea0619887d3745582bb133fb52fcb4b526b483f9">
   <category name="Effects">
+    <reapack name="Macro Knob.jsfx" type="effect" desc="Macro Knob (parameter link source)">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 \fmodern Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Macro controller for REAPER parameter links. Audio and MIDI pass through unchanged. Charcoal and amber procedural interface with Retina scaling. Requires REAPER 6.74 or later.\par}
+}
+]]></description>
+        <link rel="website">https://github.com/mannixsquared/JSFX</link>
+      </metadata>
+      <version name="0.1.0" author="Mannix Squared" time="2026-10-27T22:15:21Z">
+        <changelog><![CDATA[Initial release with the shared charcoal and amber interface.]]></changelog>
+        <source>https://github.com/mannixsquared/JSFX/raw/ea0619887d3745582bb133fb52fcb4b526b483f9/Effects/Macro%20Knob.jsfx</source>
+        <source file="Macro Knob-LICENSE.txt">https://github.com/mannixsquared/JSFX/raw/ea0619887d3745582bb133fb52fcb4b526b483f9/LICENSE</source>
+      </version>
+    </reapack>
     <reapack name="ReaCrusher.jsfx" type="effect" desc="ReaCrusher (JSFX)">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 \fmodern Courier;}}
@@ -27,6 +44,23 @@
         <source file="ReaCrusher-Guide.md">https://github.com/mannixsquared/JSFX/raw/1dba17103b0ff9cffff4ee6af12407f67b0db7f8/USER_GUIDE.md</source>
       </version>
     </reapack>
+    <reapack name="XY Pad.jsfx" type="effect" desc="Four Track XY Blender (8-in, stereo out)">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 \fmodern Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Blend four stereo inputs with equal-power XY interpolation and a linked limiter. Charcoal and amber procedural interface with Retina scaling. Requires REAPER 6.74 or later.\par}
+}
+]]></description>
+        <link rel="website">https://github.com/mannixsquared/JSFX</link>
+      </metadata>
+      <version name="0.1.0" author="Mannix Squared" time="2026-10-27T22:15:21Z">
+        <changelog><![CDATA[Initial release with the shared charcoal and amber interface.]]></changelog>
+        <source>https://github.com/mannixsquared/JSFX/raw/ea0619887d3745582bb133fb52fcb4b526b483f9/Effects/XY%20Pad.jsfx</source>
+        <source file="XY Pad-LICENSE.txt">https://github.com/mannixsquared/JSFX/raw/ea0619887d3745582bb133fb52fcb4b526b483f9/LICENSE</source>
+      </version>
+    </reapack>
   </category>
   <metadata>
     <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 \fmodern Courier;}}
@@ -38,12 +72,16 @@
 {\pard \ql \f0 \sa180 \li0 \fi0 \outlinelevel1 \b \fs32 ReaCrusher\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 Stereo distortion, resonant low-pass filtering and compression for REAPER. An original scalable interface, seven knobs, linked stereo processing, and 20 factory presets plus Clear using REAPER's native preset menu.\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 The interface uses procedural drawing and requires no image assets or external plugin installation.\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 \outlinelevel1 \b \fs32 Macro Knob\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 A single macro control for REAPER parameter links. It uses the same charcoal and amber interface as ReaCrusher, with scaled typography, vertical dragging, Shift for fine changes, wheel adjustment, and double-click or right-click reset. Audio and MIDI pass through unchanged.\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 \outlinelevel1 \b \fs32 XY Pad\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 A four-source stereo blender: route four stereo sources to channels 1\u8211-8 and blend them with the pad. It retains equal-power interpolation, smooth XY movement, and the linked output limiter. The panel uses ReaCrusher's palette and typography, with matching ceiling/release knobs, source-weight indicators and a gain-reduction readout. Shift-drag for fine movement; double-click the pad to centre it.\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \outlinelevel1 \b \fs32 Install with ReaPack\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 Import this repository URL in {\b Extensions \u8594 ? ReaPack \u8594 ? Import repositories}:\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \f1 https://raw.githubusercontent.com/mannixsquared/JSFX/main/index.xml\par}
-{\pard \ql \f0 \sa180 \li0 \fi0 Browse packages, install ReaCrusher, then refresh REAPER's FX browser. The adjacent {\f1 .rpl} bank is imported on first use. If the effect was previously installed, use {\b + \u8594 ? Import preset library (.rpl)} in its native preset toolbar.\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 Browse packages, search for ReaCrusher, Macro Knob, or XY Pad, and install the effects you want. Then refresh REAPER's FX browser. The adjacent {\f1 .rpl} bank is imported on first use. If the effect was previously installed, use {\b + \u8594 ? Import preset library (.rpl)} in its native preset toolbar.\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \outlinelevel1 \b \fs32 Manual installation\par}
-{\pard \ql \f0 \sa180 \li0 \fi0 Copy both files from {\f1 Effects/} to the same directory beneath your REAPER resource folder's {\f1 Effects} directory. Open the FX browser and search for ReaCrusher.\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 Copy the {\f1 .jsfx} files you want from {\f1 Effects/} into your REAPER resource folder's {\f1 Effects} directory. For ReaCrusher, copy its {\f1 .rpl} file alongside it. Open the FX browser and search for the effect name.\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 Drag vertically to adjust; Shift-drag for fine changes, scroll to adjust, and double-click to reset a knob. See {\field{\*\fldinst{HYPERLINK "USER_GUIDE.md"}}{\fldrslt{\ul
 USER_GUIDE.md
 }}}

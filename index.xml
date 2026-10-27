@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="Mannix Squared JSFX" commit="b986f2dbc6caf3aa1c09c85ae61c3e3f4e15638a">
+<index version="1" name="Mannix Squared JSFX" commit="1dba17103b0ff9cffff4ee6af12407f67b0db7f8">
   <category name="Effects">
     <reapack name="ReaCrusher.jsfx" type="effect" desc="ReaCrusher (JSFX)">
       <metadata>
@@ -18,6 +18,13 @@
         <source file="ReaCrusher.jsfx.rpl">https://github.com/mannixsquared/JSFX/raw/b986f2dbc6caf3aa1c09c85ae61c3e3f4e15638a/Effects/ReaCrusher.jsfx.rpl</source>
         <source file="ReaCrusher-LICENSE.txt">https://github.com/mannixsquared/JSFX/raw/b986f2dbc6caf3aa1c09c85ae61c3e3f4e15638a/LICENSE</source>
         <source file="ReaCrusher-Guide.md">https://github.com/mannixsquared/JSFX/raw/b986f2dbc6caf3aa1c09c85ae61c3e3f4e15638a/USER_GUIDE.md</source>
+      </version>
+      <version name="0.1.1" author="Mannix Squared" time="2026-10-27T21:54:31Z">
+        <changelog><![CDATA[Hide REAPER side meters; retain the custom input/output meters.]]></changelog>
+        <source>https://github.com/mannixsquared/JSFX/raw/1dba17103b0ff9cffff4ee6af12407f67b0db7f8/Effects/ReaCrusher.jsfx</source>
+        <source file="ReaCrusher.jsfx.rpl">https://github.com/mannixsquared/JSFX/raw/1dba17103b0ff9cffff4ee6af12407f67b0db7f8/Effects/ReaCrusher.jsfx.rpl</source>
+        <source file="ReaCrusher-LICENSE.txt">https://github.com/mannixsquared/JSFX/raw/1dba17103b0ff9cffff4ee6af12407f67b0db7f8/LICENSE</source>
+        <source file="ReaCrusher-Guide.md">https://github.com/mannixsquared/JSFX/raw/1dba17103b0ff9cffff4ee6af12407f67b0db7f8/USER_GUIDE.md</source>
       </version>
     </reapack>
   </category>

@@ -11,6 +11,21 @@ An original scalable interface, seven knobs, linked stereo processing, and
 The interface uses procedural drawing and requires no image assets or external
 plugin installation.
 
+## Macro Knob
+
+A single macro control for REAPER parameter links. It uses the same charcoal and
+amber interface as ReaCrusher, with scaled typography, vertical dragging,
+Shift for fine changes, wheel adjustment, and double-click or right-click reset.
+Audio and MIDI pass through unchanged.
+
+## XY Pad
+
+A four-source stereo blender: route four stereo sources to channels 1–8 and blend
+them with the pad. It retains equal-power interpolation, smooth XY movement, and
+the linked output limiter. The panel uses ReaCrusher's palette and typography,
+with matching ceiling/release knobs, source-weight indicators and a gain-reduction
+readout. Shift-drag for fine movement; double-click the pad to centre it.
+
 ## Install with ReaPack
 
 Import this repository URL in
@@ -20,14 +35,16 @@ Import this repository URL in
 https://raw.githubusercontent.com/mannixsquared/JSFX/main/index.xml
 ```
 
-Browse packages, install ReaCrusher, then refresh REAPER's FX browser. The adjacent
+Browse packages, search for ReaCrusher, Macro Knob, or XY Pad, and install the
+effects you want. Then refresh REAPER's FX browser. The adjacent
 `.rpl` bank is imported on first use. If the effect was previously installed,
 use **+ → Import preset library (.rpl)** in its native preset toolbar.
 
 ## Manual installation
 
-Copy both files from `Effects/` to the same directory beneath your REAPER resource
-folder's `Effects` directory. Open the FX browser and search for ReaCrusher.
+Copy the `.jsfx` files you want from `Effects/` into your REAPER resource folder's
+`Effects` directory. For ReaCrusher, copy its `.rpl` file alongside it. Open the FX
+browser and search for the effect name.
 
 Drag vertically to adjust; Shift-drag for fine changes, scroll to adjust, and
 double-click to reset a knob. See [USER_GUIDE.md](USER_GUIDE.md) for DSP details.

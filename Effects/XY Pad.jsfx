@@ -1,0 +1,248 @@
+// @description XY Pad
+// @version 0.1.0
+// @author Mannix Squared
+// @provides ../LICENSE > XY Pad-LICENSE.txt
+// @link https://github.com/mannixsquared/JSFX
+// @about
+//   Blend four stereo inputs with equal-power XY interpolation and a linked limiter.
+//   Charcoal and amber procedural interface with Retina scaling.
+//   Requires REAPER 6.74 or later.
+// @changelog
+//   Initial release with the shared charcoal and amber interface.
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Mannix Squared
+desc:Four Track XY Blender (8-in, stereo out)
+// Four stereo sources on channels 1-8, mixed to channels 1-2.
+// Pad layout: 1 = top-left, 2 = top-right,
+//             3 = bottom-left, 4 = bottom-right.
+
+in_pin:Track 1 L
+in_pin:Track 1 R
+in_pin:Track 2 L
+in_pin:Track 2 R
+in_pin:Track 3 L
+in_pin:Track 3 R
+in_pin:Track 4 L
+in_pin:Track 4 R
+out_pin:Mix L
+out_pin:Mix R
+
+slider1:0.5<0,1,0.001>-Pad X
+slider2:0.5<0,1,0.001>-Pad Y
+slider3:-0.3<-12,0,0.1>-Limiter ceiling (dB)
+slider4:100<20,500,1>-Limiter release (ms)
+
+options:gfx_hz=60 no_meter
+
+@init
+gfx_ext_retina=1;
+xy_smooth_ms = 12;
+x_pos = slider1;
+y_pos = slider2;
+lim_gain = 1;
+
+@slider
+ceiling = 10^(slider3 / 20);
+release_coeff = exp(-1 / (max(1, slider4) * 0.001 * srate));
+xy_coeff = exp(-1 / (xy_smooth_ms * 0.001 * srate));
+
+@sample
+// Smooth automation and mouse movement to prevent zipper noise.
+x_pos = slider1 + xy_coeff * (x_pos - slider1);
+y_pos = slider2 + xy_coeff * (y_pos - slider2);
+
+// Equal-power interpolation. The squared gains always sum to one.
+x_angle = x_pos * $pi * 0.5;
+y_angle = y_pos * $pi * 0.5;
+left_x  = cos(x_angle);
+right_x = sin(x_angle);
+top_y   = cos(y_angle);
+bottom_y = sin(y_angle);
+
+g1 = left_x  * top_y;
+g2 = right_x * top_y;
+g3 = left_x  * bottom_y;
+g4 = right_x * bottom_y;
+
+mix_l = spl0 * g1 + spl2 * g2 + spl4 * g3 + spl6 * g4;
+mix_r = spl1 * g1 + spl3 * g2 + spl5 * g3 + spl7 * g4;
+
+// Stereo-linked peak limiter: immediate gain reduction, smooth release.
+peak = max(abs(mix_l), abs(mix_r));
+target_gain = peak > ceiling ? ceiling / peak : 1;
+target_gain < lim_gain ? (
+  lim_gain = target_gain;
+) : (
+  lim_gain = target_gain + release_coeff * (lim_gain - target_gain);
+);
+
+// The final clamp protects against floating-point/release edge cases.
+spl0 = max(-ceiling, min(ceiling, mix_l * lim_gain));
+spl1 = max(-ceiling, min(ceiling, mix_r * lim_gain));
+
+@gfx 640 640
+// Procedural drawing vocabulary shared visually with ReaCrusher.
+function ink(r,g,b) (gfx_set(r,g,b,1););
+function text(x,y,size,str) (
+  gfx_setfont(1,"Arial",max(8,size*ui_scale));
+  gfx_x=ox+x*ui_scale; gfx_y=oy+y*ui_scale; gfx_drawstr(str);
+);
+function centered(x,y,w,size,str) local(tw,th) (
+  gfx_setfont(1,"Arial",max(8,size*ui_scale));
+  gfx_measurestr(str,tw,th);
+  gfx_x=ox+(x+w*0.5)*ui_scale-tw*0.5; gfx_y=oy+y*ui_scale;
+  gfx_drawstr(str);
+);
+function line(x,y,x2,y2) (
+  gfx_line(ox+x*ui_scale,oy+y*ui_scale,ox+x2*ui_scale,oy+y2*ui_scale,1);
+);
+function box(x,y,w,h) (
+  gfx_rect(ox+x*ui_scale,oy+y*ui_scale,w*ui_scale,h*ui_scale);
+);
+function circle(x,y,r,fill) (
+  gfx_circle(ox+x*ui_scale,oy+y*ui_scale,r*ui_scale,fill,1);
+);
+function notify(id,value,low,high) local(mask) (
+  value=max(low,min(high,value));
+  value!=slider(id) ? (
+    slider(id)=value; mask=2^(id-1);
+    sliderchange(mask); slider_automate(mask); changed_mask|=mask;
+  );
+);
+function dial(x,y,r,value,highlight) local(i,a,angle) (
+  i=0;
+  loop(31,
+    a=(0.75+i/30*1.5)*$pi;
+    i/30<=value ? ink(0.96,0.66,0.30) : ink(0.26,0.28,0.29);
+    line(x+cos(a)*r*34/28,y+sin(a)*r*34/28,
+         x+cos(a)*r*38/28,y+sin(a)*r*38/28);
+    i+=1;
+  );
+  ink(0.065,0.073,0.08); circle(x,y+2*r/28,r+1,1);
+  highlight ? ink(0.28,0.30,0.31) : ink(0.20,0.22,0.23);
+  circle(x,y,r,1);
+  ink(0.12,0.14,0.15); circle(x,y,r*23/28,0);
+  ink(1,0.79,0.48); angle=(0.75+value*1.5)*$pi;
+  line(x+cos(angle)*r*13/28,y+sin(angle)*r*13/28,
+       x+cos(angle)*r*24/28,y+sin(angle)*r*24/28);
+);
+
+function limiter_knob(id,x,y,label,low,high,reset) local(hover,value) (
+  hover=(mx-x)^2+(my-y)^2<43^2;
+  hover && pressed && !pad_dragging ? (
+    time_precise()-last_click<0.3 && last_id==id ? (
+      active=0; notify(id,reset,low,high);
+      slider_automate(2^(id-1),1); changed_mask ? sliderchange(-1);
+    ) : (active=id;);
+    last_click=time_precise(); last_id=id;
+  );
+  active==id && mouse_down && !pressed ? (
+    notify(id,slider(id)+(prev_my-my)*(high-low)*((mouse_cap&8) ? 0.0005 : 0.005),low,high);
+    changed_mask ? knob_changed=1;
+  );
+  hover && mouse_wheel!=0 ? (
+    notify(id,slider(id)+mouse_wheel/120*(high-low)*((mouse_cap&8) ? 0.001 : 0.01),low,high);
+    slider_automate(2^(id-1),1); changed_mask ? sliderchange(-1);
+  );
+  value=max(0,min(1,(slider(id)-low)/(high-low)));
+  dial(x,y,28,value,hover||active==id);
+  ink(0.88,0.88,0.85); centered(x-70,y+47,140,13,label);
+  id==3 ? sprintf(#knob_value,"%.1f dB",slider3) : sprintf(#knob_value,"%.0f ms",slider4);
+  ink(0.60,0.63,0.63); centered(x-70,y+65,140,12,#knob_value);
+);
+function source_level(y,label,value) (
+  ink(0.60,0.63,0.63); text(454,y,11,label);
+  ink(0.20,0.22,0.23); box(518,y+4,96,4);
+  ink(0.96,0.66,0.30); box(518,y+4,96*value,4);
+);
+
+ui_scale=max(0.01,min(gfx_w/640,gfx_h/640));
+ox=(gfx_w-640*ui_scale)/2; oy=(gfx_h-640*ui_scale)/2;
+mx=(mouse_x-ox)/ui_scale; my=(mouse_y-oy)/ui_scale;
+gfx_getchar();
+pad_x=26; pad_y=132; pad_w=400; pad_h=400;
+mouse_down=mouse_cap&1; pressed=mouse_down && !previous_left;
+mouse_over_pad=mx>=pad_x && mx<=pad_x+pad_w && my>=pad_y && my<=pad_y+pad_h;
+changed_mask=0;
+// Preserve click-to-jump and relative dragging beyond the pad's edges.
+mouse_down && (mouse_over_pad || pad_dragging) && active==0 ? (
+  !pad_dragging ? (
+    time_precise()-last_pad_click<0.3 && last_pad_click>0 ? (
+      notify(1,0.5,0,1); notify(2,0.5,0,1);
+    ) : (
+      notify(1,(mx-pad_x)/pad_w,0,1); notify(2,(my-pad_y)/pad_h,0,1);
+    );
+    last_pad_click=time_precise(); pad_dragging=1;
+  ) : (
+    fine=(mouse_cap&8) ? 0.1 : 1;
+    notify(1,slider1+(mx-last_mouse_x)/pad_w*fine,0,1);
+    notify(2,slider2+(my-last_mouse_y)/pad_h*fine,0,1);
+  );
+  last_mouse_x=mx; last_mouse_y=my;
+  changed_mask ? pad_changed=1;
+);
+!mouse_down && pad_dragging ? (
+  slider_automate(slider1,1); slider_automate(slider2,1);
+  pad_changed ? sliderchange(-1);
+  pad_dragging=0; pad_changed=0;
+);
+!mouse_down && previous_left && active>0 ? (
+  slider_automate(2^(active-1),1); knob_changed ? sliderchange(-1);
+  active=0; knob_changed=0;
+);
+
+gfx_clear=0;
+ink(0.095,0.11,0.12); box(0,0,640,640);
+ink(0.96,0.66,0.30); box(26,25,4,31);
+ink(0.94,0.93,0.88); text(42,21,27,"XY Pad");
+ink(0.55,0.59,0.59); text(43,54,11,"FOUR-SOURCE STEREO BLENDER");
+ink(0.25,0.28,0.29); line(26,87,614,87);
+ink(0.94,0.93,0.88); text(26,106,15,"01  BLEND"); text(454,106,15,"02  LIMITER");
+ink(0.21,0.24,0.25); line(440,106,440,590);
+// Subtle quarter-grid, neutral border and amber position crosshair.
+ink(0.065,0.073,0.08); box(pad_x,pad_y,pad_w,pad_h);
+ink(0.16,0.18,0.19);
+line(126,pad_y,126,pad_y+pad_h); line(326,pad_y,326,pad_y+pad_h);
+line(pad_x,232,pad_x+pad_w,232); line(pad_x,432,pad_x+pad_w,432);
+ink(0.25,0.28,0.29);
+line(226,pad_y,226,pad_y+pad_h); line(pad_x,332,pad_x+pad_w,332);
+line(pad_x,pad_y,pad_x+pad_w,pad_y); line(pad_x,pad_y,pad_x,pad_y+pad_h);
+line(pad_x,pad_y+pad_h,pad_x+pad_w,pad_y+pad_h);
+line(pad_x+pad_w,pad_y,pad_x+pad_w,pad_y+pad_h);
+ink(0.60,0.63,0.63);
+text(40,145,12,"TRACK 1"); text(354,145,12,"TRACK 2");
+text(40,507,12,"TRACK 3"); text(354,507,12,"TRACK 4");
+handle_x=pad_x+max(0,min(1,slider1))*pad_w;
+handle_y=pad_y+max(0,min(1,slider2))*pad_h;
+gfx_set(0.96,0.66,0.30,0.22);
+line(handle_x,pad_y,handle_x,pad_y+pad_h);
+line(pad_x,handle_y,pad_x+pad_w,handle_y);
+gfx_set(0.96,0.66,0.30,0.12); circle(handle_x,handle_y,18,1);
+mouse_over_pad || pad_dragging ? ink(1,0.79,0.48) : ink(0.96,0.66,0.30);
+circle(handle_x,handle_y,7,1);
+ink(0.065,0.073,0.08); circle(handle_x,handle_y,3,1);
+// Coordinate values and source weights give feedback without extra meters.
+ink(0.60,0.63,0.63); text(454,148,11,"POSITION");
+ink(0.88,0.88,0.85);
+sprintf(#position,"X   %.1f %%",slider1*100); text(454,172,13,#position);
+sprintf(#position,"Y   %.1f %%",slider2*100); text(454,196,13,#position);
+ui_x=slider1*$pi*0.5; ui_y=slider2*$pi*0.5;
+source_level(238,"TRACK 1",cos(ui_x)*cos(ui_y));
+source_level(262,"TRACK 2",sin(ui_x)*cos(ui_y));
+source_level(286,"TRACK 3",cos(ui_x)*sin(ui_y));
+source_level(310,"TRACK 4",sin(ui_x)*sin(ui_y));
+limiter_knob(3,534,382,"Ceiling",-12,0,-0.3);
+limiter_knob(4,534,504,"Release",20,500,100);
+// UI updates must refresh coefficients even if @slider isn't called by the host.
+changed_mask&12 ? (
+  ceiling=10^(slider3/20);
+  release_coeff=exp(-1/(max(1,slider4)*0.001*srate));
+);
+ink(0.52,0.56,0.56);
+centered(26,554,400,11,"DRAG TO BLEND   |   SHIFT: FINE");
+centered(26,575,400,11,"DOUBLE-CLICK: CENTRE");
+sprintf(#reduction,"GR  %.1f dB",max(0,-20*log(max(0.000001,lim_gain))/log(10)));
+centered(454,584,160,11,#reduction);
+ink(0.25,0.28,0.29); line(26,609,614,609);
+ink(0.52,0.55,0.55); text(26,620,10,"8 INPUTS / 2 OUTPUTS"); text(454,620,10,"MANNIX SQUARED");
+prev_my=my; previous_left=mouse_down; mouse_wheel=0;

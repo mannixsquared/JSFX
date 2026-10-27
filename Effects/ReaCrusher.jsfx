@@ -1,5 +1,5 @@
 // @description ReaCrusher
-// @version 0.1.0
+// @version 0.1.1
 // @author Mannix Squared
 // @provides
 //   ReaCrusher.jsfx.rpl
@@ -11,7 +11,7 @@
 //   Includes 20 factory presets plus Clear in REAPER's native preset menu.
 //   GPL-3.0-or-later.
 // @changelog
-//   Initial release with native presets and a scalable procedural interface.
+//   Hide REAPER side meters; retain the custom input/output meters.
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Mannix Squared
 // This program is free software: you can redistribute it and/or modify it under
@@ -22,6 +22,7 @@ desc:ReaCrusher (JSFX)
 // Stereo distortion, low-pass filtering and linked compression.
 // Signal path: mechanical > LP + limiter > tube > compressor > mix > gain > clip.
 tags: distortion compressor filter
+options:no_meter
 in_pin:Left
 in_pin:Right
 out_pin:Left
